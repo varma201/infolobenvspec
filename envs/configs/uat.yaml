@@ -9,4 +9,4 @@ defined_tags: {}
 
 freeform_tags: {}
 
-enable_delete: false
+enable_delete: true
