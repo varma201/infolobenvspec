@@ -1,4 +1,4 @@
-name: OCI Infrastructure - DEV
+name: OCI Infrastructure Deployment
 
 on:
   push:
@@ -8,22 +8,25 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: oci-dev-infrastructure
-  cancel-in-progress: false
-
 env:
-  TF_IN_AUTOMATION: "true"
+  TF_IN_AUTATION: "true"
   TF_INPUT: "false"
+  TF_HTTP_UPDATE_METHOD: "PUT"
 
 jobs:
-  plan:
+  # -------------------------------------------------
+  # DEV PLAN
+  # -------------------------------------------------
+  dev-plan:
     name: DEV Plan
     runs-on: ubuntu-latest
 
     defaults:
       run:
         working-directory: envs
+
+    env:
+      TF_HTTP_ADDRESS: ${{ secrets.TF_HTTP_ADDRESS_DEV }}
 
     steps:
       - name: Checkout repository
@@ -34,7 +37,6 @@ jobs:
         with:
           tofu_wrapper: false
 
-      # Run formatting before terraform.tfvars is created from the secret.
       - name: OpenTofu Format Check
         run: tofu fmt -check -recursive
 
@@ -77,18 +79,21 @@ jobs:
           path: envs/dev.tfplan
           retention-days: 1
 
-  apply:
+  # -------------------------------------------------
+  # DEV APPLY
+  # -------------------------------------------------
+  dev-apply:
     name: DEV Apply
-    needs: plan
+    needs: dev-plan
     runs-on: ubuntu-latest
-
-    # This job waits for approval when required reviewers
-    # are configured for the GitHub environment named dev.
     environment: dev
 
     defaults:
       run:
         working-directory: envs
+
+    env:
+      TF_HTTP_ADDRESS: ${{ secrets.TF_HTTP_ADDRESS_DEV }}
 
     steps:
       - name: Checkout repository
@@ -125,5 +130,239 @@ jobs:
           name: dev-tfplan
           path: envs
 
-      - name: Apply Approved DEV Plan
+      - name: Apply DEV Plan
         run: tofu apply -auto-approve dev.tfplan
+
+  # -------------------------------------------------
+  # UAT PLAN
+  # -------------------------------------------------
+  uat-plan:
+    name: UAT Plan
+    needs: dev-apply
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: envs
+
+    env:
+      TF_HTTP_ADDRESS: ${{ secrets.TF_HTTP_ADDRESS_UAT }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
+      - name: Create terraform.tfvars
+        shell: bash
+        env:
+          TFVARS_CONTENT: ${{ secrets.TFVARS_FILE }}
+        run: |
+          printf '%s' "$TFVARS_CONTENT" > terraform.tfvars
+          chmod 600 terraform.tfvars
+
+      - name: Create OCI private key
+        shell: bash
+        env:
+          OCI_PRIVATE_KEY_CONTENT: ${{ secrets.OCI_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.oci
+          printf '%s' "$OCI_PRIVATE_KEY_CONTENT" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+
+      - name: OpenTofu Init
+        run: tofu init -reconfigure
+
+      - name: OpenTofu Validate
+        run: tofu validate
+
+      - name: Create UAT Plan
+        run: |
+          tofu plan \
+            -var="environment=uat" \
+            -out=uat.tfplan
+
+      - name: Show UAT Plan
+        run: tofu show -no-color uat.tfplan
+
+      - name: Upload UAT Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: uat-tfplan
+          path: envs/uat.tfplan
+          retention-days: 1
+
+  # -------------------------------------------------
+  # UAT APPLY
+  # -------------------------------------------------
+  uat-apply:
+    name: UAT Apply
+    needs: uat-plan
+    runs-on: ubuntu-latest
+    environment: uat
+
+    defaults:
+      run:
+        working-directory: envs
+
+    env:
+      TF_HTTP_ADDRESS: ${{ secrets.TF_HTTP_ADDRESS_UAT }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
+      - name: Create terraform.tfvars
+        shell: bash
+        env:
+          TFVARS_CONTENT: ${{ secrets.TFVARS_FILE }}
+        run: |
+          printf '%s' "$TFVARS_CONTENT" > terraform.tfvars
+          chmod 600 terraform.tfvars
+
+      - name: Create OCI private key
+        shell: bash
+        env:
+          OCI_PRIVATE_KEY_CONTENT: ${{ secrets.OCI_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.oci
+          printf '%s' "$OCI_PRIVATE_KEY_CONTENT" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+
+      - name: OpenTofu Init
+        run: tofu init -reconfigure
+
+      - name: Download UAT Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: uat-tfplan
+          path: envs
+
+      - name: Apply UAT Plan
+        run: tofu apply -auto-approve uat.tfplan
+
+  # -------------------------------------------------
+  # PROD PLAN
+  # -------------------------------------------------
+  prod-plan:
+    name: PROD Plan
+    needs: uat-apply
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: envs
+
+    env:
+      TF_HTTP_ADDRESS: ${{ secrets.TF_HTTP_ADDRESS_PROD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
+      - name: Create terraform.tfvars
+        shell: bash
+        env:
+          TFVARS_CONTENT: ${{ secrets.TFVARS_FILE }}
+        run: |
+          printf '%s' "$TFVARS_CONTENT" > terraform.tfvars
+          chmod 600 terraform.tfvars
+
+      - name: Create OCI private key
+        shell: bash
+        env:
+          OCI_PRIVATE_KEY_CONTENT: ${{ secrets.OCI_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.oci
+          printf '%s' "$OCI_PRIVATE_KEY_CONTENT" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+
+      - name: OpenTofu Init
+        run: tofu init -reconfigure
+
+      - name: OpenTofu Validate
+        run: tofu validate
+
+      - name: Create PROD Plan
+        run: |
+          tofu plan \
+            -var="environment=prod" \
+            -out=prod.tfplan
+
+      - name: Show PROD Plan
+        run: tofu show -no-color prod.tfplan
+
+      - name: Upload PROD Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-tfplan
+          path: envs/prod.tfplan
+          retention-days: 1
+
+  # -------------------------------------------------
+  # PROD APPLY
+  # -------------------------------------------------
+  prod-apply:
+    name: PROD Apply
+    needs: prod-plan
+    runs-on: ubuntu-latest
+    environment: prod
+
+    defaults:
+      run:
+        working-directory: envs
+
+    env:
+      TF_HTTP_ADDRESS: ${{ secrets.TF_HTTP_ADDRESS_PROD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
+      - name: Create terraform.tfvars
+        shell: bash
+        env:
+          TFVARS_CONTENT: ${{ secrets.TFVARS_FILE }}
+        run: |
+          printf '%s' "$TFVARS_CONTENT" > terraform.tfvars
+          chmod 600 terraform.tfvars
+
+      - name: Create OCI private key
+        shell: bash
+        env:
+          OCI_PRIVATE_KEY_CONTENT: ${{ secrets.OCI_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.oci
+          printf '%s' "$OCI_PRIVATE_KEY_CONTENT" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+
+      - name: OpenTofu Init
+        run: tofu init -reconfigure
+
+      - name: Download PROD Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: prod-tfplan
+          path: envs
+
+      - name: Apply PROD Plan
+        run: tofu apply -auto-approve prod.tfplan
