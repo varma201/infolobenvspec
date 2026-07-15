@@ -9,7 +9,7 @@ variable "environment" {
 
   validation {
     condition = contains(
-      ["dev", "stag", "prod"],
+      ["dev", "uat", "prod"],
       lower(var.environment)
     )
 
