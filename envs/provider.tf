@@ -6,10 +6,7 @@ terraform {
     }
   }
 
-  backend "http" {
-    address       = "https://objectstorage.us-chicago-1.oraclecloud.com/p/m8KCNGhBDpGKBQ83aDAfPeQ1XbmlsJkFvt9tBWsKdpYA0p_0l0UMJsMKHrhtOL6e/n/axgk4zcjyogn/b/tfstate-infolob-foundation/o/foundation/terraform.tfstate"
-    update_method = "PUT"
-  }
+  backend "http" {}
 }
 
 provider "oci" {

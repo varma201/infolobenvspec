@@ -102,3 +102,7 @@ variable "par_time_expires" {
   type        = string
   default     = "2027-06-22T00:00:00Z"
 }
+variable "par_object_prefix" {
+  description = "Object prefix allowed by the PAR."
+  type        = string
+}
