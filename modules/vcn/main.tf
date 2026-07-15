@@ -7,5 +7,5 @@ resource "oci_core_vcn" "this" {
   cidr_blocks = var.cidr_blocks
 
   defined_tags  = var.defined_tags
-  freeform_tags = local.combined_freeform_tags
+  freeform_tags = var.freeform_tags
 }

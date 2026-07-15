@@ -4,7 +4,7 @@ resource "oci_identity_compartment" "this" {
   name        = local.compartment_name
   description = local.compartment_description
 
-  freeform_tags = local.combined_freeform_tags
+  freeform_tags = var.freeform_tags
   defined_tags  = var.defined_tags
 
   enable_delete = var.enable_delete
