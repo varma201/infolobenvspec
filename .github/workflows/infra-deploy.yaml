@@ -34,6 +34,10 @@ jobs:
         with:
           tofu_wrapper: false
 
+      # Run formatting before terraform.tfvars is created from the secret.
+      - name: OpenTofu Format Check
+        run: tofu fmt -check -recursive
+
       - name: Create terraform.tfvars
         shell: bash
         env:
@@ -53,9 +57,6 @@ jobs:
 
       - name: OpenTofu Init
         run: tofu init -reconfigure
-
-      - name: OpenTofu Format Check
-        run: tofu fmt -check -recursive
 
       - name: OpenTofu Validate
         run: tofu validate
@@ -81,6 +82,8 @@ jobs:
     needs: plan
     runs-on: ubuntu-latest
 
+    # This job waits for approval when required reviewers
+    # are configured for the GitHub environment named dev.
     environment: dev
 
     defaults:
