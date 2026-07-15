@@ -16,6 +16,9 @@ output "tf_bucket_url" {
   description = "URL of the bucket"
   value       = module.storage_bucket.bucket_url
 }
+output "object_storage_namespace" {
+  value = data.oci_objectstorage_namespace.current.namespace
+}
 
 
 # -----------------------------------------------

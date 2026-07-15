@@ -35,10 +35,7 @@ variable "compartment_ocid" {
   type        = string
 }
 
-variable "namespace" {
-  description = "Object Storage namespace for the tenancy."
-  type        = string
-}
+
 
 variable "bucket_name" {
   description = "Name of the Object Storage bucket."

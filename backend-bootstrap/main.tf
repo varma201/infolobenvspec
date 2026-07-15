@@ -1,3 +1,4 @@
+data "oci_objectstorage_namespace" "current" {}
 
 # -----------------------------------------------
 # OCI Object Storage Bucket module - Terraform backend bucket 
@@ -5,7 +6,7 @@
 module "storage_bucket" {
   source         = "../modules/storage_bucket"
   compartment_id = var.compartment_ocid
-  namespace      = var.namespace
+  namespace      = data.oci_objectstorage_namespace.current.namespace
   bucket_name    = var.bucket_name
   environment    = var.environment
   access_type    = var.bucket_access_type
@@ -22,7 +23,7 @@ module "storage_bucket" {
 module "object_storage_par" {
   source = "../modules/object_storage_par"
 
-  namespace   = var.namespace
+  namespace   = data.oci_objectstorage_namespace.current.namespace
   bucket_name = module.storage_bucket.bucket_name
   par_name    = var.par_name
   access_type = var.par_access_type
