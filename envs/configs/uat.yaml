@@ -1,0 +1,12 @@
+parent_compartment_id: "ocid1.compartment.oc1..aaaaaaaatuukylmpb6jdkrvvcpvfop7albfk5h7y3wtkbfdpuexa7v45flya"
+environment: "uat"
+business_unit: "finance"
+
+vcn_cidr_blocks:
+  - "10.30.0.0/16"
+
+defined_tags: {}
+
+freeform_tags: {}
+
+enable_delete: false

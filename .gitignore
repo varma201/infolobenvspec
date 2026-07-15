@@ -1,0 +1,29 @@
+# Terraform local state and modules
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Sensitive variable files
+terraform.tfvars
+*.tfvars.local
+
+# OCI credentials and key files
+oci_node_key.txt
+*.pem
+*.key
+.oci/
+
+# IDE and editor metadata
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
