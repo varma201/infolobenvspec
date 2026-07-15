@@ -15,18 +15,4 @@ locals {
   compartment_description = (
     "${title(var.business_unit)} compartment for the ${var.environment} environment."
   )
-
-  # Standard tags created by the module.
-  standard_freeform_tags = {
-    Environment  = var.environment
-    BusinessUnit = var.business_unit
-    ResourceType = "compartment"
-    ManagedBy    = "Terraform"
-  }
-
-  # Combine standard tags with tags supplied by the user.
-  combined_freeform_tags = merge(
-    local.standard_freeform_tags,
-    var.freeform_tags
-  )
 }

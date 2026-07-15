@@ -14,16 +14,4 @@ locals {
     0,
     15
   )
-
-  default_freeform_tags = {
-    BusinessUnit = local.business_unit
-    Environment  = local.environment
-    ResourceType = "vcn"
-    ManagedBy    = "Terraform"
-  }
-
-  combined_freeform_tags = merge(
-    var.freeform_tags,
-    local.default_freeform_tags
-  )
 }
