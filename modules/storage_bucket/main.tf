@@ -7,5 +7,5 @@ resource "oci_objectstorage_bucket" "this" {
   storage_tier = var.storage_tier
   versioning   = var.versioning
 
-  freeform_tags = local.freeform_tags
+  freeform_tags = var.freeform_tags
 }

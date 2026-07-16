@@ -13,6 +13,8 @@ variable "bucket_name" {
   type        = string
 }
 
+
+
 variable "environment" {
   description = "Environment tag for the bucket."
   type        = string
@@ -44,4 +46,10 @@ variable "managed_by" {
 variable "region" {
   description = "OCI region where the bucket is created."
   type        = string
+}
+
+variable "freeform_tags" {
+  description = "Free-form tags to apply to the resource."
+  type        = map(string)
+  default     = {}
 }
