@@ -8,4 +8,10 @@ resource "oci_identity_compartment" "this" {
   defined_tags  = var.defined_tags
 
   enable_delete = var.enable_delete
+
+  lifecycle {
+    ignore_changes = [
+      defined_tags
+    ]
+  }
 }
